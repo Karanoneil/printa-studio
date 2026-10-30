@@ -1,0 +1,32 @@
+<?php /** @var \Magento\Framework\View\Element\Template $block */ ?>
+<?php
+/** @var \Printa\Designer\Helper\Data $helper */
+$helper       = $this->helper(\Printa\Designer\Helper\Data::class);
+$product      = $block->getProduct();
+$studioOrigin = $helper->getStudioOrigin();
+
+if (!$helper->isEnabled() || !$product || !$studioOrigin) {
+    return;
+}
+?>
+<div id="printa-designer-root" data-mage-init='{"Printa_Designer/js/designer": {
+    "origin": "<?= $block->escapeHtmlAttr($studioOrigin) ?>",
+    "product": {
+        "sku":  "<?= $block->escapeJs($product->getSku()) ?>",
+        "name": "<?= $block->escapeJs($product->getName()) ?>"
+    }
+}}'>
+    <!-- the Printa embed.js loader builds the button + modal here -->
+</div>
+
+<script>
+    // Load the Printa loader once per page
+    (function () {
+        if (window.__printaLoaderLoaded) { return; }
+        window.__printaLoaderLoaded = true;
+        var s = document.createElement('script');
+        s.src = '<?= $block->escapeJs($studioOrigin) ?>/embed.js';
+        s.async = true;
+        document.head.appendChild(s);
+    })();
+</script>

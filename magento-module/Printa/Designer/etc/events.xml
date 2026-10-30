@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="checkout_cart_product_add_after">
+        <observer name="printa_save_design_on_add"
+                  instance="Printa\Designer\Observer\SaveDesignToQuoteItem"/>
+    </event>
+    <event name="checkout_cart_update_items_after">
+        <observer name="printa_refresh_design_on_update"
+                  instance="Printa\Designer\Observer\SaveDesignToQuoteItem"/>
+    </event>
+</config>

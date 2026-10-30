@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printa Studio — How it works</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=Poppins:wght@300;400;600;700;800&family=Montserrat:wght@300;400;600;700;800;900&family=Playfair+Display:wght@400..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Oswald:wght@300;400;500;600;700&family=Bebas+Neue&family=Anton&family=Pacifico&family=Dancing+Script:wght@400;600;700&family=Caveat:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0c0c0f; color:#fff; font-family:Inter,system-ui,sans-serif; padding:40px 44px 60px; }
+  h1 { font-size:26px; margin-bottom:6px; }
+  .sub { color:rgba(255,255,255,.45); font-size:13px; margin-bottom:28px; }
+  .steps { display:flex; gap:10px; margin-bottom:36px; flex-wrap:wrap; }
+  .step { flex:1; min-width:150px; border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); border-radius:12px; padding:12px 14px; }
+  .step b { display:block; font-size:12px; margin-bottom:3px; }
+  .step span { font-size:10.5px; color:rgba(255,255,255,.4); line-height:1.45; display:block; }
+  .step .n { color:#a78bfa; font-weight:700; margin-right:5px; }
+  .card { border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.03); border-radius:16px; padding:22px; margin-bottom:26px; }
+  .prompt-row { margin-bottom:16px; }
+  .q { font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.35); display:block; margin-bottom:6px; }
+  .prompt-row code { display:inline-block; background:rgba(124,58,237,.12); border:1px solid rgba(124,58,237,.3); color:#d8caff; padding:8px 14px; border-radius:10px; font-size:12.5px; font-family:'JetBrains Mono',monospace; }
+  .result-row { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
+  .canvas-wrap { flex-shrink:0; }
+  .notes { flex:1; min-width:220px; }
+  .badges { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .badges span { font-size:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); padding:4px 9px; border-radius:99px; color:rgba(255,255,255,.65); }
+  .expl { font-size:11.5px; color:rgba(255,255,255,.4); line-height:1.55; }
+  .toggle { display:flex; align-items:center; gap:8px; margin:2px 0 30px; font-size:12px; color:rgba(255,255,255,.6); cursor:pointer; user-select:none; width:fit-content; }
+  .toggle input { accent-color:#7c3aed; width:15px; height:15px; cursor:pointer; }
+  body.show-layers .el { outline:1.5px dashed rgba(167,139,250,.85); outline-offset:1px; }
+  .cta { margin-top:8px; display:flex; gap:12px; flex-wrap:wrap; }
+  .cta a { text-decoration:none; font-size:13px; font-weight:600; padding:11px 20px; border-radius:11px; }
+  .cta .primary { background:linear-gradient(90deg,#7c3aed,#c026d3); color:#fff; }
+  .cta .ghost { border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.8); }
+</style>
+</head>
+<body>
+  <h1>How Printa Studio works</h1>
+  <p class="sub">Every design below was generated live by the app's AI engine — not mockups. Rendered here exactly as the app renders them.</p>
+
+  <div class="steps">
+    <div class="step"><b><span class="n">1</span>Type what you want</b><span>Plain English. No design words required.</span></div>
+    <div class="step"><b><span class="n">2</span>AI composes the design</b><span>Occasion, brand, colors, fonts, layout — all detected and placed as editable elements.</span></div>
+    <div class="step"><b><span class="n">3</span>Tweak anything</b><span>Drag, resize, rotate, rewrite text. Double-click to edit. Full undo.</span></div>
+    <div class="step"><b><span class="n">4</span>Export or embed</b><span>Download print-quality PNG, or embed the whole editor in Magento with one script tag.</span></div>
+  </div>
+
+  <label class="toggle"><input type="checkbox" onchange="document.body.classList.toggle('show-layers', this.checked)"> Show the AI's layer structure</label>
+
+  
+  <section class="card">
+    <div class="prompt-row">
+      <span class="q">You type</span>
+      <code>"50% off sale poster for Bella's Boutique, elegant gold and black, sale starts Friday, www.bella.com"</code>
+    </div>
+    <div class="result-row">
+      <div class="canvas-wrap"><div style="position:relative;width:300px;height:450px;background:linear-gradient(150deg,#FFF8DC,#F4E4C1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)"><div class="el" style="left:123.00000000000001px;top:40.5px;width:54.00000000000001px;height:54.00000000000001px;display:flex;align-items:center;justify-content:center;font-size:51.111111111111114px;line-height:1">🏷️</div><div class="el" style="left:45px;top:112.5px;width:210px;height:15.166666666666666px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:10.833333333333334px;font-weight:400;font-style:italic;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:0px">Limited time only</div><div class="el" style="left:30px;top:130.5px;width:240px;height:52.88888888888889px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:'Playfair Display',sans-serif;font-size:33.05555555555556px;font-weight:600;color:#3B2412;text-align:center;line-height:1.06;letter-spacing:0px">Bella's Boutique</div><div class="el" style="left:120px;top:186.69444444444443px;width:60px;height:0.8333333333333334px;background:#8B5A2B;border-radius:0;height:0.8333333333333334px"></div><div class="el" style="left:30px;top:195.69444444444443px;width:240px;height:27.222222222222225px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:'Playfair Display',sans-serif;font-size:24.166666666666668px;font-weight:600;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:1.1111111111111112px">MEGA SALE</div><div class="el" style="left:30px;top:237.69444444444443px;width:240px;height:21.305555555555557px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:16.38888888888889px;font-weight:700;color:#3B2412;text-align:center;line-height:1.2;letter-spacing:0px">50% OFF</div><div class="el" style="left:45px;top:273.75px;width:210px;height:15.166666666666666px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:10.833333333333334px;font-weight:500;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:0px">Friday</div><div class="el" style="left:45px;top:297.5833333333333px;width:210px;height:13px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:'JetBrains Mono',sans-serif;font-size:8.61111111111111px;font-weight:400;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:0px">www.bella.com</div><div class="el" style="left:84.00000000000001px;top:329.9166666666667px;width:132px;height:33px;background:#8B5A2B;border-radius:999px;height:33px"></div><div class="el" style="left:84.00000000000001px;top:339.15666666666664px;width:132px;height:13.200000000000001px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:11.11111111111111px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.2;letter-spacing:0px">Learn more →</div></div></div>
+      <div class="notes">
+        <span class="q">The AI reads</span>
+        <div class="badges"><span>Detected occasion: mega sale (sale)</span><span>Theme: light, palette #FFF8DC → #F4E4C1, accent #8B5A2B</span><span>Fonts: playfair (display) + lora (body), size 1080×1620 (Poster)</span><span>Brand: "Bella's Boutique"</span><span>Offer: "50% OFF"</span></div>
+        <p class="expl">Every detected detail becomes an editable element — nothing is a flat image. Toggle the layer view to see the structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="prompt-row">
+      <span class="q">You type</span>
+      <code>"grand opening poster for Meera's Bakery, warm cream colors, opens June 14, call 555-0123"</code>
+    </div>
+    <div class="result-row">
+      <div class="canvas-wrap"><div style="position:relative;width:300px;height:450px;background:linear-gradient(150deg,#FFF8DC,#F4E4C1);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)"><div class="el" style="left:123.00000000000001px;top:40.5px;width:54.00000000000001px;height:54.00000000000001px;display:flex;align-items:center;justify-content:center;font-size:51.111111111111114px;line-height:1">✨</div><div class="el" style="left:45px;top:112.5px;width:210px;height:15.166666666666666px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:10.833333333333334px;font-weight:400;font-style:italic;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:0px">Doors open soon</div><div class="el" style="left:30px;top:130.5px;width:240px;height:69.77777777777779px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Anton,sans-serif;font-size:43.611111111111114px;font-weight:800;color:#3B2412;text-align:center;line-height:1.06;letter-spacing:0px">Meera's Bakery</div><div class="el" style="left:120px;top:204.63888888888889px;width:60px;height:0.8333333333333334px;background:#8B5A2B;border-radius:0;height:0.8333333333333334px"></div><div class="el" style="left:30px;top:213.63888888888889px;width:240px;height:27.222222222222225px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Anton,sans-serif;font-size:24.166666666666668px;font-weight:600;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:1.1111111111111112px">GRAND OPENING</div><div class="el" style="left:30px;top:255.63888888888889px;width:240px;height:21.305555555555557px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:16.38888888888889px;font-weight:700;color:#3B2412;text-align:center;line-height:1.2;letter-spacing:0px">Opening week specials inside</div><div class="el" style="left:45px;top:291.69444444444446px;width:210px;height:15.166666666666666px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:10.833333333333334px;font-weight:500;color:#8B5A2B;text-align:center;line-height:1.2;letter-spacing:0px">June 14</div><div class="el" style="left:84.00000000000001px;top:330.52777777777777px;width:132px;height:33px;background:#8B5A2B;border-radius:999px;height:33px"></div><div class="el" style="left:84.00000000000001px;top:339.7677777777777px;width:132px;height:13.200000000000001px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Lora,sans-serif;font-size:11.11111111111111px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.2;letter-spacing:0px">Learn more →</div></div></div>
+      <div class="notes">
+        <span class="q">The AI reads</span>
+        <div class="badges"><span>Detected occasion: grand opening (grand-opening)</span><span>Theme: light, palette #FFF8DC → #F4E4C1, accent #8B5A2B</span><span>Fonts: anton (display) + lora (body), size 1080×1620 (Poster)</span><span>Brand: "Meera's Bakery"</span></div>
+        <p class="expl">Every detected detail becomes an editable element — nothing is a flat image. Toggle the layer view to see the structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="prompt-row">
+      <span class="q">You type</span>
+      <code>"gym fitness story promo, bold green energetic, JOIN NOW 30% off"</code>
+    </div>
+    <div class="result-row">
+      <div class="canvas-wrap"><div style="position:relative;width:300px;height:533.3333333333334px;background:linear-gradient(150deg,#052E1B,#065F46);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)"><div style="position:absolute;inset:0;opacity:.05;background-image:repeating-linear-gradient(45deg,#fff 0px,#fff 1px,transparent 1px,transparent 14px)"></div><div class="el" style="left:123.00000000000001px;top:48px;width:54.00000000000001px;height:54.00000000000001px;display:flex;align-items:center;justify-content:center;font-size:51.111111111111114px;line-height:1">💪</div><div class="el" style="left:45px;top:120px;width:210px;height:15.166666666666666px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Poppins,sans-serif;font-size:10.833333333333334px;font-weight:400;color:#A7F3D0;text-align:center;line-height:1.2;letter-spacing:0px">Train with the best</div><div class="el" style="left:30px;top:138px;width:240px;height:69.77777777777779px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Anton,sans-serif;font-size:43.611111111111114px;font-weight:800;color:#FFFFFF;text-align:center;line-height:1.06;letter-spacing:0px">Your Brand</div><div class="el" style="left:120px;top:212.13888888888889px;width:60px;height:0.8333333333333334px;background:#10B981;border-radius:0;height:0.8333333333333334px"></div><div class="el" style="left:30px;top:221.13888888888889px;width:240px;height:27.222222222222225px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Anton,sans-serif;font-size:24.166666666666668px;font-weight:600;color:#10B981;text-align:center;line-height:1.2;letter-spacing:1.1111111111111112px">GET STRONG</div><div class="el" style="left:30px;top:263.1388888888889px;width:240px;height:21.305555555555557px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Poppins,sans-serif;font-size:16.38888888888889px;font-weight:700;color:#FFFFFF;text-align:center;line-height:1.2;letter-spacing:0px">30% OFF</div><div class="el" style="left:84.00000000000001px;top:314.19444444444446px;width:132px;height:33px;background:#10B981;border-radius:999px;height:33px"></div><div class="el" style="left:84.00000000000001px;top:323.4344444444444px;width:132px;height:13.200000000000001px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Poppins,sans-serif;font-size:11.11111111111111px;font-weight:700;color:#0A0A0A;text-align:center;line-height:1.2;letter-spacing:0px">Learn more →</div></div></div>
+      <div class="notes">
+        <span class="q">The AI reads</span>
+        <div class="badges"><span>Detected occasion: get strong (fitness)</span><span>Theme: dark, palette #052E1B → #065F46, accent #10B981</span><span>Fonts: anton (display) + poppins (body), size 1080×1920 (Story / Reel)</span><span>Offer: "30% OFF"</span></div>
+        <p class="expl">Every detected detail becomes an editable element — nothing is a flat image. Toggle the layer view to see the structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="prompt-row">
+      <span class="q">You type</span>
+      <code>"web banner for a tech startup called DeployDev, ship faster, dark tech"</code>
+    </div>
+    <div class="result-row">
+      <div class="canvas-wrap"><div style="position:relative;width:640px;height:213.33333333333334px;background:linear-gradient(150deg,#0B2545,#1D3557);border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)"><div style="position:absolute;inset:0;opacity:.05;background-image:repeating-linear-gradient(45deg,#fff 0px,#fff 1px,transparent 1px,transparent 14px)"></div><div class="el" style="left:51.2px;top:42.66666666666667px;width:320px;height:10.752px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Poppins,sans-serif;font-size:7.680000000000001px;font-weight:600;color:#A8DADC;text-align:left;line-height:1.2;letter-spacing:1.28px">EXCELLENCE DELIVERED</div><div class="el" style="left:51.2px;top:68.26666666666667px;width:352.00000000000006px;height:46.080000000000005px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Montserrat,sans-serif;font-size:38.400000000000006px;font-weight:700;color:#FFFFFF;text-align:left;line-height:1.05;letter-spacing:0px">YOUR BRAND</div><div class="el" style="left:51.2px;top:132.26666666666668px;width:352.00000000000006px;height:14.336000000000002px;display:flex;flex-direction:column;justify-content:center;white-space:pre-wrap;overflow:visible;font-family:Montserrat,sans-serif;font-size:11.946666666666667px;font-weight:600;color:#FCBF49;text-align:left;line-height:1.2;letter-spacing:0px">Let's build together</div><div class="el" style="left:460.8px;top:59.733333333333334px;width:96px;height:96px;display:flex;align-items:center;justify-content:center;font-size:89.60000000000001px;line-height:1">🚀</div><div class="el" style="left:435.2000000000001px;top:-21.333333333333336px;width:149.33333333333334px;height:149.33333333333334px;background:#FCBF49;border-radius:50%;height:149.33333333333334px"></div></div></div>
+      <div class="notes">
+        <span class="q">The AI reads</span>
+        <div class="badges"><span>Detected occasion: new venture (business)</span><span>Theme: dark, palette #0B2545 → #1D3557, accent #FCBF49</span><span>Fonts: montserrat (display) + poppins (body), size 1500×500 (Web Banner)</span></div>
+        <p class="expl">Every detected detail becomes an editable element — nothing is a flat image. Toggle the layer view to see the structure.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="cta">
+    <a class="primary" href="http://localhost:3000/studio">Try the real studio → localhost:3000/studio</a>
+    <a class="ghost" href="http://localhost:3000/docs">Magento integration docs</a>
+  </div>
+</body>
+</html>

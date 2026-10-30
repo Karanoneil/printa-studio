@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Inject the Printa designer launcher on every product page.
+    The template stays hidden unless the product is flagged as
+    designer-enabled (attribute printa_designer_enabled).
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="product.info.form.content">
+            <block class="Magento\Catalog\Block\Product\View"
+                   name="printa.designer.launcher"
+                   template="Printa_Designer::product/launcher.phtml"
+                   after="product.info.addtocart"
+                   ifConfig="printa_designer/general/enabled"/>
+        </referenceContainer>
+    </body>
+</page>
