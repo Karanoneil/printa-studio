@@ -17,7 +17,7 @@ import { uid, textDefaults, GRADIENT_PRESETS, SOLID_SWATCHES } from "@/lib/studi
 import { FONT_LIBRARY, CLIPART } from "@/lib/data";
 import { DesignRenderer, fontStack } from "./DesignRenderer";
 import { exportPng, downloadDataUrl } from "@/lib/exportDesign";
-import { generateFromPrompt } from "@/lib/aiDesigner";
+import { generateFromPrompt, generateVariants, generateVariantsWithLLM, type Variant, type LLMConfig } from "@/lib/aiDesigner";
 
 export interface StudioEditorProps {
   initialDesign: StudioDesign;
@@ -50,6 +50,10 @@ export function StudioEditor({ initialDesign, onExit, embedMode, onDone }: Studi
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [aiNotes, setAiNotes] = useState<string[]>([]);
+  const [aiVariants, setAiVariants] = useState<Variant[] | null>(null);
+  const [aiSource, setAiSource] = useState<string>("");
+  const [showAiSettings, setShowAiSettings] = useState(false);
+  const [llmCfg, setLlmCfg] = useState<LLMConfig | null>(null);
   const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [zoomFit, setZoomFit] = useState(true);
@@ -221,17 +225,61 @@ export function StudioEditor({ initialDesign, onExit, embedMode, onDone }: Studi
   });
 
   // --- AI generation ---
-  const runAi = () => {
+  // load saved BYOK config once
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("printa:llm");
+      if (saved) setLlmCfg(JSON.parse(saved));
+    } catch { /* noop */ }
+  }, []);
+
+  const saveLlmCfg = (cfg: LLMConfig | null) => {
+    setLlmCfg(cfg);
+    try {
+      if (cfg) localStorage.setItem("printa:llm", JSON.stringify(cfg));
+      else localStorage.removeItem("printa:llm");
+    } catch { /* noop */ }
+  };
+
+  const runAi = async () => {
     if (!aiPrompt.trim()) return;
     setAiBusy(true);
     setAiNotes([]);
+    setAiVariants(null);
+
+    // 1. real LLM if configured
+    if (llmCfg) {
+      try {
+        const { designs, notes } = await generateVariantsWithLLM(aiPrompt, llmCfg);
+        setAiVariants(designs.map((d, i) => ({
+          style: ["AI direction 1", "AI direction 2", "AI direction 3"][i] || `AI ${i + 1}`,
+          design: d,
+          notes: notes.length ? notes : ["Generated with your LLM"],
+        })));
+        setAiSource(llmCfg.model);
+        setAiNotes(notes.length ? notes : [`3 directions generated with ${llmCfg.model}`]);
+        setAiBusy(false);
+        return;
+      } catch (err) {
+        setAiNotes([`LLM failed (${err instanceof Error ? err.message : "unknown"}) — using built-in engine`]);
+      }
+    }
+
+    // 2. deterministic engine (always works, offline)
     setTimeout(() => {
-      const { design: d, notes } = generateFromPrompt(aiPrompt);
-      commit(d);
-      setSelectedId(null);
-      setAiNotes(notes);
+      const variants = generateVariants(aiPrompt);
+      setAiVariants(variants);
+      setAiSource("built-in");
+      setAiNotes([]);
       setAiBusy(false);
-    }, 900);
+    }, 700);
+  };
+
+  const applyVariant = (v: Variant) => {
+    commit(v.design);
+    setSelectedId(null);
+    setAiVariants(null);
+    setAiNotes([`Applied "${v.style}" — tweak anything, or undo`]);
   };
 
   // --- export ---
@@ -408,14 +456,55 @@ export function StudioEditor({ initialDesign, onExit, embedMode, onDone }: Studi
           value={aiPrompt}
           onChange={(e) => setAiPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") runAi(); }}
-          placeholder={"Describe your design — e.g. 50% off sale poster for Bella's Boutique, elegant gold and black, sale starts Friday, www.bella.com"}
+          placeholder={"Describe your design — e.g. 50% off sale poster for Bella's Boutique, elegant gold and black, sale starts Friday"}
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-white/25"
         />
+        <button
+          onClick={() => setShowAiSettings((s) => !s)}
+          className={`px-2 h-8 rounded-lg text-[10px] font-medium transition-all flex-shrink-0 ${llmCfg ? "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25" : "bg-white/5 text-white/40 hover:bg-white/10"}`}
+          title={llmCfg ? `LLM active: ${llmCfg.model}` : "Connect an LLM for richer designs (optional)"}
+        >
+          {llmCfg ? "LLM ✓" : "LLM"}
+        </button>
         <button onClick={runAi} disabled={aiBusy || !aiPrompt.trim()} className="px-4 h-8 rounded-lg bg-violet-600 hover:bg-violet-500 text-xs font-semibold transition-all disabled:opacity-30 flex items-center gap-1.5 flex-shrink-0">
           {aiBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
           {aiBusy ? "Designing…" : "Generate"}
         </button>
       </div>
+
+      {/* ============ LLM SETTINGS (BYOK) ============ */}
+      {showAiSettings && (
+        <LlmSettings initial={llmCfg} onSave={saveLlmCfg} onClose={() => setShowAiSettings(false)} />
+      )}
+
+      {/* ============ VARIANT PICKER ============ */}
+      {aiVariants && (
+        <div className="border-b border-white/10 bg-black/30 px-4 py-3 flex-shrink-0 overflow-x-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[11px] font-semibold text-violet-300 flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3" /> Pick a direction — {aiSource === "built-in" ? "3 styles, fully editable" : `generated with ${aiSource}`}
+            </span>
+            <button onClick={() => setAiVariants(null)} className="ml-auto text-white/30 hover:text-white/60 text-xs">✕</button>
+          </div>
+          <div className="flex gap-3">
+            {aiVariants.map((v) => (
+              <button key={v.style} onClick={() => applyVariant(v)}
+                className="flex-shrink-0 group rounded-xl border border-white/10 hover:border-violet-500/50 bg-white/[0.02] overflow-hidden transition-all">
+                <div className="w-[150px] p-2 flex items-center justify-center bg-black/40">
+                  <div className="overflow-hidden rounded-md shadow-lg" style={{ maxHeight: 170 }}>
+                    <DesignRenderer design={v.design} width={v.design.width / v.design.height > 2 ? 130 : Math.min(134, Math.round(134 * (v.design.width / v.design.height)))} className="rounded-none" />
+                  </div>
+                </div>
+                <div className="px-2.5 py-1.5 border-t border-white/10 text-[10px] font-medium text-white/60 group-hover:text-violet-300 transition-colors text-left">
+                  {v.style}
+                  <span className="block text-[9px] text-white/30">{v.design.width}×{v.design.height} · {v.design.elements.length} layers</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {aiNotes.length > 0 && (
         <div className="bg-violet-500/5 border-b border-violet-500/10 px-4 py-1.5 text-[11px] text-violet-300/70 flex gap-2 flex-wrap flex-shrink-0">
           <Sparkles className="w-3 h-3 mt-0.5 flex-shrink-0" />
@@ -538,6 +627,89 @@ export function StudioEditor({ initialDesign, onExit, embedMode, onDone }: Studi
 // ============================================================
 // Sub-panels
 // ============================================================
+
+function LlmSettings({ initial, onSave, onClose }: {
+  initial: LLMConfig | null;
+  onSave: (cfg: LLMConfig | null) => void;
+  onClose: () => void;
+}) {
+  const [baseUrl, setBaseUrl] = useState(initial?.baseUrl || "https://api.openai.com/v1");
+  const [apiKey, setApiKey] = useState(initial?.apiKey || "");
+  const [model, setModel] = useState(initial?.model || "gpt-4o-mini");
+  const [testing, setTesting] = useState(false);
+  const [status, setStatus] = useState<string>("");
+
+  const PRESETS = [
+    { label: "OpenAI", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini" },
+    { label: "Groq", baseUrl: "https://api.groq.com/openai/v1", model: "llama-3.3-70b-versatile" },
+    { label: "OpenRouter", baseUrl: "https://openrouter.ai/api/v1", model: "google/gemini-2.0-flash-001" },
+  ];
+
+  const test = async () => {
+    setTesting(true);
+    setStatus("");
+    try {
+      const res = await fetch(`${baseUrl.replace(/\/+$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model, max_tokens: 5, messages: [{ role: "user", content: "hi" }] }),
+      });
+      setStatus(res.ok ? "✓ Connected — designs will use your LLM" : `✕ API responded ${res.status}`);
+    } catch (e) {
+      setStatus(`✕ ${e instanceof Error ? e.message : "connection failed"}`);
+    } finally {
+      setTesting(false);
+    }
+  };
+
+  return (
+    <div className="border-b border-white/10 bg-black/40 px-4 py-3 flex-shrink-0">
+      <div className="max-w-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[11px] font-semibold text-white/80">Connect an LLM (optional, bring-your-own-key)</span>
+          <button onClick={onClose} className="ml-auto text-white/30 hover:text-white/60 text-xs">✕</button>
+        </div>
+        <p className="text-[10px] text-white/35 mb-2.5 leading-relaxed">
+          Without a key you still get 3 solid built-in styles. With a key, the AI understands nuance, writes real copy, and follows pro design principles. Your key stays in this browser only — it is never sent anywhere except directly to the provider.
+        </p>
+        <div className="flex gap-1.5 mb-2.5">
+          {PRESETS.map((p) => (
+            <button key={p.label} onClick={() => { setBaseUrl(p.baseUrl); setModel(p.model); }}
+              className={`px-2.5 py-1 rounded-lg text-[10px] transition-colors ${baseUrl === p.baseUrl ? "bg-violet-500/20 text-violet-300" : "bg-white/5 text-white/40 hover:bg-white/10"}`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-2">
+          <input value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="Base URL (OpenAI-compatible)"
+            className="px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] outline-none focus:border-violet-500 col-span-2" />
+          <input value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="API key" type="password"
+            className="px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] outline-none focus:border-violet-500" />
+          <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="Model id"
+            className="px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[11px] outline-none focus:border-violet-500" />
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={test} disabled={!apiKey || testing}
+            className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-medium disabled:opacity-30 transition-colors">
+            {testing ? "Testing…" : "Test"}
+          </button>
+          <button onClick={() => { if (apiKey && baseUrl && model) { onSave({ baseUrl, apiKey, model }); onClose(); } }}
+            disabled={!apiKey || !baseUrl || !model}
+            className="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-[10px] font-semibold disabled:opacity-30 transition-colors">
+            Save & use LLM
+          </button>
+          {initial && (
+            <button onClick={() => { onSave(null); setStatus("Disconnected — using built-in engine"); }}
+              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white/50 transition-colors">
+              Disconnect
+            </button>
+          )}
+          {status && <span className={`text-[10px] ${status.startsWith("✓") ? "text-emerald-400" : "text-red-400"}`}>{status}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PatternOverlay({ design }: { design: StudioDesign }) {
   const { pattern } = design.background;

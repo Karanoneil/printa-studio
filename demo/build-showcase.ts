@@ -1,6 +1,6 @@
 // Generates demo/showcase.html using REAL output from lib/aiDesigner.ts
 import { writeFileSync, mkdirSync } from "fs";
-import { generateFromPrompt } from "../lib/aiDesigner";
+import { generateVariants } from "../lib/aiDesigner";
 import type { StudioDesign } from "../lib/studio";
 
 const demos: { prompt: string; hint?: string }[] = [
@@ -52,8 +52,16 @@ function renderDesign(d: StudioDesign, displayW: number): string {
 }
 
 const cards = demos.map(({ prompt }, i) => {
-  const { design, notes } = generateFromPrompt(prompt);
-  const displayW = design.width / design.height > 2.2 ? 640 : 300;
+  const variants = generateVariants(prompt);
+  const variantHTML = variants.map((v) => {
+    const displayW = v.design.width / v.design.height > 2.2 ? 430 : 210;
+    return `
+      <div class="variant">
+        <div class="v-label">${esc(v.style)}</div>
+        ${renderDesign(v.design, displayW)}
+      </div>`;
+  }).join("");
+  const notes = variants[0].notes;
   const badges = notes.map((n) => `<span>${esc(n)}</span>`).join("");
   return `
   <section class="card">
@@ -62,12 +70,12 @@ const cards = demos.map(({ prompt }, i) => {
       <code>"${esc(prompt)}"</code>
     </div>
     <div class="result-row">
-      <div class="canvas-wrap">${renderDesign(design, displayW)}</div>
-      <div class="notes">
-        <span class="q">The AI reads</span>
-        <div class="badges">${badges}</div>
-        <p class="expl">Every detected detail becomes an editable element — nothing is a flat image. Toggle the layer view to see the structure.</p>
-      </div>
+      <div class="variants-row">${variantHTML}</div>
+    </div>
+    <div class="notes">
+      <span class="q">The AI read this from your sentence</span>
+      <div class="badges">${badges}</div>
+      <p class="expl">One prompt → three distinct directions, each fully editable — no flat images. This is the built-in engine; connect an LLM key (LLM button in the editor) and the same picker fills with model-generated designs following professional hierarchy rules.</p>
     </div>
   </section>`;
 }).join("\n");
@@ -94,8 +102,10 @@ const html = `<!DOCTYPE html>
   .q { font-size:10px; text-transform:uppercase; letter-spacing:.12em; color:rgba(255,255,255,.35); display:block; margin-bottom:6px; }
   .prompt-row code { display:inline-block; background:rgba(124,58,237,.12); border:1px solid rgba(124,58,237,.3); color:#d8caff; padding:8px 14px; border-radius:10px; font-size:12.5px; font-family:'JetBrains Mono',monospace; }
   .result-row { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; }
-  .canvas-wrap { flex-shrink:0; }
-  .notes { flex:1; min-width:220px; }
+  .variants-row { display:flex; gap:14px; flex-wrap:wrap; }
+  .variant { flex-shrink:0; }
+  .v-label { font-size:10px; text-transform:uppercase; letter-spacing:.1em; color:#a78bfa; margin-bottom:6px; font-weight:600; }
+  .notes { margin-top:14px; }
   .badges { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
   .badges span { font-size:10px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); padding:4px 9px; border-radius:99px; color:rgba(255,255,255,.65); }
   .expl { font-size:11.5px; color:rgba(255,255,255,.4); line-height:1.55; }

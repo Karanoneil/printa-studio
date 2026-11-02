@@ -13,7 +13,10 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { TEMPLATES, emptyDesign, type StudioDesign, CANVAS_PRESETS } from "@/lib/studio";
+import type { Variant } from "@/lib/aiDesigner";
 import { StudioEditor } from "@/components/studio/StudioEditor";
+import { BriefWizard } from "@/components/studio/BriefWizard";
+import { DesignRenderer } from "@/components/studio/DesignRenderer";
 
 interface EmbedConfig {
   product?: { sku?: string; name?: string; width?: number; height?: number; price?: number };
@@ -24,7 +27,8 @@ interface EmbedConfig {
 export default function EmbedPage() {
   const [config, setConfig] = useState<EmbedConfig | null>(null);
   const [pendingInit, setPendingInit] = useState<EmbedConfig | null>(null);
-  const [mode, setMode] = useState<"await-init" | "template-pick" | "editing">("await-init");
+  const [wizardResult, setWizardResult] = useState<Variant[] | null>(null);
+  const [mode, setMode] = useState<"await-init" | "start" | "wizard" | "wizard-result" | "template-pick" | "editing">("await-init");
 
   const pickTemplate = (d: StudioDesign) => {
     setConfig((c) => ({ ...c, design: d }));
@@ -36,7 +40,7 @@ export default function EmbedPage() {
     const msg = event.data as { type?: string; product?: EmbedConfig["product"]; preset?: string; design?: StudioDesign };
     if (msg.type === "printa:init") {
       setConfig({ product: msg.product, preset: msg.preset, design: msg.design });
-      setMode(msg.design ? "editing" : "template-pick");
+      setMode(msg.design ? "editing" : "start");
     }
   }, []);
 
@@ -56,7 +60,7 @@ export default function EmbedPage() {
         product: product ? { name: product, sku: params.get("sku") || undefined } : undefined,
         preset: preset || undefined,
       });
-      setMode(autostart ? "editing" : "template-pick");
+      setMode(autostart ? "editing" : "start");
     }
     return () => window.removeEventListener("message", handleInit);
   }, [handleInit]);
@@ -88,6 +92,88 @@ export default function EmbedPage() {
         Waiting for product context…
       </div>
         );
+  }
+
+  // ---------- start chooser ----------
+  if (mode === "start") {
+    const preset = config?.preset ? CANVAS_PRESETS.find((p) => p.id === config.preset) : undefined;
+    return (
+      <div className="min-h-screen bg-[#0c0c0f] text-white p-6 flex items-center justify-center">
+        <div className="max-w-2xl w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold">
+              {config?.product?.name ? `Design your ${config.product.name}` : "Let's create your design"}
+            </h1>
+            <p className="text-xs text-white/40 mt-1.5">Two ways to start — both end with an editable design.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button onClick={() => setMode("wizard")}
+              className="p-5 rounded-2xl border border-violet-500/40 bg-gradient-to-b from-violet-500/15 to-transparent hover:from-violet-500/25 transition-all text-left group">
+              <div className="text-3xl mb-3">🪄</div>
+              <div className="text-sm font-bold group-hover:text-violet-300 transition-colors">Design it for me</div>
+              <div className="text-[11px] text-white/40 mt-1 leading-relaxed">Answer 6 quick questions — brand, occasion, offer, style — and pick from 3 designs.</div>
+            </button>
+            <button onClick={() => setMode("template-pick")}
+              className="p-5 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/30 transition-all text-left group">
+              <div className="text-3xl mb-3">🎨</div>
+              <div className="text-sm font-bold group-hover:text-white transition-colors">Start from a template</div>
+              <div className="text-[11px] text-white/40 mt-1 leading-relaxed">Browse professionally designed layouts and swap in your own text.</div>
+            </button>
+          </div>
+          <div className="mt-6 text-center">
+            <button onClick={onCancel} className="text-xs text-white/30 hover:text-white/60 transition-colors">Cancel</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- wizard ----------
+  if (mode === "wizard") {
+    return (
+      <div className="min-h-screen bg-[#0c0c0f] text-white flex items-start justify-center px-6 py-8 overflow-y-auto">
+        <div className="w-full max-w-2xl">
+          <BriefWizard
+            sizePreset={config?.preset}
+            llmCfg={null}
+            onApply={(variants: Variant[]) => {
+              setConfig((c) => ({ ...c }));
+              setWizardResult(variants);
+              setMode("wizard-result");
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- wizard result ----------
+  if (mode === "wizard-result" && wizardResult) {
+    return (
+      <div className="min-h-screen bg-[#0c0c0f] text-white p-6 flex items-center justify-center">
+        <div className="max-w-4xl w-full">
+          <h2 className="text-lg font-bold mb-1">Pick your favorite</h2>
+          <p className="text-xs text-white/40 mb-5">Fully editable — you can change everything next.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {wizardResult.map((v) => (
+              <button key={v.style} onClick={() => pickTemplate(v.design)}
+                className="group rounded-2xl border border-white/10 hover:border-violet-500/50 bg-white/[0.03] overflow-hidden transition-all text-left">
+                <div className="p-3 flex items-center justify-center bg-black/40 max-h-[280px] overflow-hidden">
+                  <DesignRenderer design={v.design} width={v.design.width / v.design.height > 2.2 ? 240 : 140} className="rounded-lg shadow-xl" />
+                </div>
+                <div className="px-3 py-2.5 border-t border-white/10">
+                  <div className="text-xs font-semibold group-hover:text-violet-300 transition-colors">{v.style}</div>
+                  <div className="text-[10px] text-white/35">{v.design.elements.length} editable layers</div>
+                </div>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => setMode("wizard")} className="mt-5 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors">
+            ← Change my answers
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // ---------- template picker ----------
